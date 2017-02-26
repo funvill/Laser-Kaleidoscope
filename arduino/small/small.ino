@@ -1,25 +1,34 @@
-/*************************************************** 
-  This is an example for our Adafruit 16-channel PWM & Servo driver
-  Servo test - this will drive 16 servos, one after the other
+/****************************************************************************** 
 
-  Pick one up today in the adafruit shop!
-  ------> http://www.adafruit.com/products/815
+  Math clock 
+  =============================================================================
+  Last updated: 2017-Feb-26
+  Created by: Steven Smethurst @funvill 
 
-  These displays use I2C to communicate, 2 pins are required to  
-  interface. For Arduino UNOs, thats SCL -> Analog 5, SDA -> Analog 4
+  More information can be found here 
+  https://github.com/funvill/mathclock
 
-  Adafruit invests time and resources providing this open source code, 
-  please support Adafruit and open-source hardware by purchasing 
-  products from Adafruit!
+  Hardware
+  -----------------------------------------------------------------------------
+  - Adafruit 16-channel PWM & Servo driver http://www.adafruit.com/products/815
+  - 96 9g servo motors 
+  - 96 line laser pointers. 
 
-  Written by Limor Fried/Ladyada for Adafruit Industries.  
-  BSD license, all text above must be included in any redistribution
- ************************************************** **/
+  Pin out
+  -----------------------------------------------------------------------------
+  Arduino Nano      PCA9685 (Adafruit 16-channel PWM & Servo driver) 
+  GND           ==> GND 
+  Not connected ==> DE 
+  A5            ==> SCL
+  A4            ==> SDA    
+  5V            ==> VCC 
+  5V            ==> V+
+
+******************************************************************************/
 
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 #include "mathclock.h"
-
 
 // called this way, it uses the default address 0x40
 // Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver( 0x40);
@@ -36,35 +45,28 @@ void setup() {
   Serial.begin(115200);
   Serial.println("16 channel Servo test!");
 
-
-  Serial.print("%");
-  pwm.begin();
-
-  Serial.print("+");
-  
+  pwm.begin();  
   pwm.setPWMFreq(60);  // Analog servos run at ~60 Hz updates
-
-  Serial.print("[");
 }
 
-void loop() {
-  Serial.print(".");
-  return ;
+void loop() 
+{
+  Serial.println("TimesTable=" + String( MathClock.GetTimesTable() ) ) ;
 
   // Do the math and update the angles for each servo 
-  // MathClock.Loop();
+  MathClock.Loop();
 
   // Move the servos.
   for( unsigned short servonum = 0 ; servonum < SETTING_MAX_NODES ; servonum++ ) {
-    float degrees = MathClock.GetNodeAngle( servonum ) ; 
-
     Serial.print(servonum);
-		Serial.print("\t");
+    Serial.print("  ");
+
+    float degrees = MathClock.GetNodeAngle( servonum ) ;     
 		Serial.print(degrees);
 		Serial.println("");
 
-    int pulselen = map(degrees, 0, 180, SERVOMIN, SERVOMAX);
-    pwm.setPWM(servonum, 0, pulselen);
+    // int pulselen = map(degrees, 0, 180, SERVOMIN, SERVOMAX);
+    // pwm.setPWM(servonum, 0, pulselen);
   }
 
   // Delay between movements
