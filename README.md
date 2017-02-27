@@ -23,5 +23,5 @@ This is a huge version that I bring to shows.
 
 ![96x_table2](/documentation/96x_table2.png?raw=true "96x_table2")
 ![96x_table3](/documentation/96x_table3.png?raw=true "96x_table3")
-![96x_table9](/documentation/16x_table9.png?raw=true "96x_table9")
-![96x_table9](/documentation/16x_table20.png?raw=true "96x_table20")
+![96x_table9](/documentation/96x_table9.png?raw=true "96x_table9")
+![96x_table9](/documentation/96x_table20.png?raw=true "96x_table20")
