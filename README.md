@@ -1,3 +1,10 @@
-# mathclock
+# Math Clock
 
-Create a large 1-3 meter circle. Evenly places around the circle are 96 servos. Each servo has a laser diode on it with vertical plastic fresnel lens. Each min the servos will move and increase the times table by 1. The fractal will slowly change over time creating a new image every min. This project is based on this video “Times Tables, Mandelbrot and the Heart of Mathematics” by “Mathologer” https://www.youtube.com/watch?v=qhbuKbxJsk8 An interactive animation tool can be found here http://entibo.fr/timesTables/ 
+A large one meter wooden circle with ninety-six servos evenly places around the edge of the circle. On the top of each servo is a line laser pointer (vertical plastic Fresnel lens).  Each the loop, the servos are moved so that a fractal pattern forms from the laser lines on the circle. 
+
+The fractal patterns are based off times tables of the Mandelbrot set as described in this video “Times Tables, Mandelbrot and the Heart of Mathematics” by “Mathologer” https://www.youtube.com/watch?v=qhbuKbxJsk8. An interactive animation of these fractals  can be found here http://entibo.fr/timesTables/ 
+
+ToDo
+
+- Choose a better name. math clock is not the most inspiring name. 
+- Do a better intro so all the art geeks will like me. 
