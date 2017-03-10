@@ -11,8 +11,8 @@
   Hardware
   -----------------------------------------------------------------------------
   - Adafruit 16-channel PWM & Servo driver http://www.adafruit.com/products/815
-  - 96 9g servo motors 
-  - 96 line laser pointers. 
+  - 16 9g servo motors 
+  - 16 line laser pointers. 
 
   Pin out
   -----------------------------------------------------------------------------
@@ -31,8 +31,8 @@
 
 // Consts 
 // ============================================================================
-static const char * SKETCH_VERSION = "0.1" ; 
-static const char * SKETCH_LAST_UPDATED = "2017-Feb-26" ; 
+static const char * SKETCH_VERSION = "0.2" ; 
+static const char * SKETCH_LAST_UPDATED = "2017-Mar-10" ; 
 
 // Depending on your servo make, the pulse width min and max may vary, you 
 // want these to be as small/large as possible without hitting the hard stop
@@ -50,11 +50,15 @@ static const unsigned short SETTING_SERVOMAX = 500 ;
 // Analog servos run at ~60 Hz updates
 static const unsigned short SETTING_PWM_FREQUENCY = 60 ; 
 
+
 // Settings 
 // ============================================================================
 static const unsigned short SETTING_MAX_NODES = 16 ; 
 static const unsigned short SETTING_MOVEMENT_DELAY = 1000*1 ; 
 static const float SETTING_MOVEMENT_RATE = 0.2f ; 
+
+// All the servos are off by a little bit. This is the difference that they are off by. 
+static short SERVO_CALABRATION[SETTING_MAX_NODES] ; 
 
 // Globals 
 // ============================================================================
@@ -63,6 +67,60 @@ float gTimesTable ;
 // called this way, it uses the default address 0x40
 // Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver( 0x40);
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+
+
+void SetServoDegrees( unsigned char servo, unsigned char deg) {
+  if( servo > SETTING_MAX_NODES ) {
+    return ; 
+  }
+
+  if( deg + SERVO_CALABRATION[servo] > 180 ) {
+    deg = 180 ; 
+  } else if( deg + SERVO_CALABRATION[servo] < 0 ) {
+    deg = 0 ; 
+  } else {
+    deg += SERVO_CALABRATION[servo] ; 
+  }
+
+  int pulselen = map(deg, 0, 180, SETTING_SERVOMIN, SETTING_SERVOMAX);
+  pwm.setPWM(servo, 0, pulselen);
+
+  Serial.println("servo: " + String(servo) + ", deg: " + String(deg) + ", SERVO_CALABRATION: "+ String(SERVO_CALABRATION[servo]) ) ;  
+}
+void CreateServoCalabrationTable() 
+{
+  // This table is manually generated. 
+  // The teeth of the serovs do not let all of the lasers to be places in perfect order. 
+  // I used the LasersToCenter() function then check to see how far each laser was off from 
+  // pointing at the laser directly across from them. Then I made a guess and updated this table. 
+  SERVO_CALABRATION[0]  =  8; 
+  SERVO_CALABRATION[1]  = -8; 
+  SERVO_CALABRATION[2]  = -8; 
+  SERVO_CALABRATION[3]  = -5; 
+  SERVO_CALABRATION[4]  = -3; 
+  SERVO_CALABRATION[5]  =  5; 
+  SERVO_CALABRATION[6]  = -7; 
+  SERVO_CALABRATION[7]  = -5; 
+  SERVO_CALABRATION[8]  =  8; 
+  SERVO_CALABRATION[9]  = -2; 
+  SERVO_CALABRATION[10] = 10; 
+  SERVO_CALABRATION[11] = -3; 
+  SERVO_CALABRATION[12] =  7; 
+  SERVO_CALABRATION[13] =  0; 
+  SERVO_CALABRATION[14] = -7; 
+  SERVO_CALABRATION[15] =  7; 
+  
+}
+
+
+void LasersToCenter() {
+  int pulselen = 0 ; 
+  for( unsigned short node = 0 ; node <= SETTING_MAX_NODES ; node++ ) {
+    SetServoDegrees( node, 90 ); 
+  }
+  delay( 1000) ; 
+}
+
 
 void CalibrateServo() {
     int servo = 0 ; 
@@ -97,32 +155,75 @@ void CalibrateServo() {
         pwm.setPWM(node, 0, pulselen);
         Serial.println(String( node ) + ",\t" + String( degrees) + ",\t" + String(pulselen) );
       }
-      delay( 15 ); 
+      delay( 100 ); 
     }
 
-    // All servos point at a single node, Rotate thought the series.
-    Serial.println("All servos point at the same target, roate the target.");
-    for( unsigned short target = 0 ; target <= SETTING_MAX_NODES ; target++ ) {
-      Serial.println("Servo, target (deltaPoint), degrees, pulselen");
-      for( unsigned short node = 0 ; node <= SETTING_MAX_NODES ; node++ ) {
-
-        // Calulate what node to look at.
-        float deltaPoint = abs( (float) target - node ); 
-        if( deltaPoint == 0 ) {
-          // We have no where to point at, point at anything
-          deltaPoint = 1 ; 
-        }
-        float degrees = PointAt( deltaPoint, SETTING_MAX_NODES );
-
-        pulselen = map(degrees, 0, 180, SETTING_SERVOMIN, SETTING_SERVOMAX);
-        pwm.setPWM(node, 0, pulselen);
-
-        Serial.println("[" + String( node ) + "],\t" + String( target ) + " ("+ String(deltaPoint) + "),\t" + String( degrees) + ",\t" + String(pulselen) );
-      }
-      delay( 500 ); 
-    }
+   
     return ; 
 }
+
+
+void FullScan() 
+{
+  unsigned char scanRate = 1 ; 
+  unsigned short moveDelay = 1 ; 
+  
+  // All servos, full scan
+  Serial.println("All servos full scan" );
+
+  // Forwards. 
+  for( short degrees = 0 ; degrees <= 180 ; degrees += scanRate ) {
+    for( unsigned short node = 0 ; node <= SETTING_MAX_NODES ; node++ ) {    
+      SetServoDegrees( node, degrees );    
+    }
+    delay( moveDelay ); 
+  }
+
+  // Backwards 
+  for( short degrees = 180 ; degrees > 0 ; degrees -= scanRate ) {
+    for( unsigned short node = 0 ; node <= SETTING_MAX_NODES ; node++ ) {        
+      SetServoDegrees( node, degrees );    
+    }
+    delay( moveDelay ); 
+  }
+}
+
+void AllLasersPointAtSameTarget() 
+{
+  for( unsigned short target = 0 ; target <= SETTING_MAX_NODES ; target++ ) {
+    for( unsigned short node = 0 ; node <= SETTING_MAX_NODES ; node++ ) {
+  
+      float deltaPoint = 0 ; 
+      if( target - node < 0 ) {
+        deltaPoint = abs( (float) node - target); 
+      } else { 
+        // Calulate what node to look at.
+        deltaPoint = abs( (float) target - node ); 
+      }
+      
+      if( deltaPoint == 0 ) {
+        continue; 
+      }
+      
+      float degrees = PointAt( deltaPoint, SETTING_MAX_NODES );
+      SetServoDegrees( node, degrees );   
+    }
+    delay( 500 ); 
+  }
+}
+
+
+
+void LasersToStartingLocations() {
+  int pulselen = 0 ; 
+  for( unsigned short node = 0 ; node <= SETTING_MAX_NODES ; node++ ) {
+    float degrees = PointAt( 1, SETTING_MAX_NODES );
+    pulselen = map(degrees, 0, 180, SETTING_SERVOMIN, SETTING_SERVOMAX);
+    pwm.setPWM(node, 0, pulselen);
+    delay( 500 ); 
+  }
+}
+
 
 float PointAt( float deltaPoint, unsigned short nodeCount ) {
 
@@ -145,6 +246,8 @@ void setup()
   Serial.println("Version: " + String( SKETCH_VERSION ) ) ;  
   Serial.println("Last updated: " + String( SKETCH_LAST_UPDATED ) ) ;  
 
+  CreateServoCalabrationTable(); 
+
   // Start the times tables off at low number. 
   gTimesTable = 1.0f;
   
@@ -152,12 +255,38 @@ void setup()
   pwm.begin();  
   pwm.setPWMFreq(SETTING_PWM_FREQUENCY);  
 
-  // Calibrate the servo to make sure that they are set up correctly
-  CalibrateServo(); 
+  // Lasers to starting Locations. Pointing at nearest neighbour 
+  LasersToStartingLocations(); 
+  delay( 1000*1 ); 
+  LasersToCenter(); 
+  delay( 1000*1 ); 
+
+  
 }
 
+unsigned char pattern = 0 ; 
 void loop() 
 {
+
+  // AllLasersPointAtSameTarget() ; 
+  // return ; 
+  
+  pattern++; 
+  
+  if( pattern >= 0 && pattern < 5 ) {
+    FullScan() ;
+  } if( pattern >= 0 && pattern < 5 ) {
+    AllLasersPointAtSameTarget() ;
+  } else {
+    pattern = 0 ; 
+  }
+
+
+  
+  return ; 
+  
+  // CalibrateServo();
+  // return ; 
 
   // Update the times table. 
   gTimesTable += SETTING_MOVEMENT_RATE ; 
