@@ -55,7 +55,7 @@ static const unsigned short SETTING_PWM_FREQUENCY = 60;
 // Settings
 // ============================================================================
 static const unsigned short SETTING_MAX_NODES = 16;
-static const unsigned short SETTING_FRAME_DELAY = 1000 * 1;
+static const unsigned short SETTING_FRAME_DELAY = 1000 * 5;
 static const float SETTING_MOVEMENT_RATE = 0.5f;
 
 // All the servos are off by a little bit. This is the difference that they are off by.
@@ -418,7 +418,7 @@ void TwoSideFanRotating()
 
 void TestPattern()
 {
-  TwoSideFanRotating(); 
+  
   TurnOffServos(SETTING_FRAME_DELAY * 30);
 }
 
@@ -443,7 +443,8 @@ void setup()
 
 void loop()
 {
-  // TestPattern();
+
+  // TestPattern() ; 
   // return;
 
   switch (gPattern++)
