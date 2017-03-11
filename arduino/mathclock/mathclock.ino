@@ -54,7 +54,7 @@ static const unsigned short SETTING_PWM_FREQUENCY = 60 ;
 // Settings 
 // ============================================================================
 static const unsigned short SETTING_MAX_NODES = 16 ; 
-static const unsigned short SETTING_MOVEMENT_DELAY = 1000*1 ; 
+static const unsigned short SETTING_FRAME_DELAY = 1000*1 ; 
 static const float SETTING_MOVEMENT_RATE = 0.2f ; 
 
 // All the servos are off by a little bit. This is the difference that they are off by. 
@@ -63,17 +63,20 @@ static short SERVO_CALABRATION[SETTING_MAX_NODES] ;
 // Globals 
 // ============================================================================
 float gTimesTable ; 
+unsigned char gPattern ; 
 
 // called this way, it uses the default address 0x40
 // Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver( 0x40);
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
-
+// Utility functions 
+// ---------------------------------------------
 void SetServoDegrees( unsigned char servo, unsigned char deg) {
   if( servo > SETTING_MAX_NODES ) {
     return ; 
   }
 
+  // Add SERVO_CALABRATION offsets 
   if( deg + SERVO_CALABRATION[servo] > 180 ) {
     deg = 180 ; 
   } else if( deg + SERVO_CALABRATION[servo] < 0 ) {
@@ -82,11 +85,33 @@ void SetServoDegrees( unsigned char servo, unsigned char deg) {
     deg += SERVO_CALABRATION[servo] ; 
   }
 
+  // Convert deg to pulselen
   int pulselen = map(deg, 0, 180, SETTING_SERVOMIN, SETTING_SERVOMAX);
   pwm.setPWM(servo, 0, pulselen);
 
+  // Debug 
   Serial.println("servo: " + String(servo) + ", deg: " + String(deg) + ", SERVO_CALABRATION: "+ String(SERVO_CALABRATION[servo]) ) ;  
 }
+
+float PointAtAbsolute( unsigned char node, unsigned char target) {
+  return PointAtDelta( node, FindDeltaNode( node, target ) ) ; 
+}
+
+float PointAtDelta( float deltaPoint, unsigned short nodeCount ) {
+
+  // I don't understand any of this. This was made by @Luthor2k https://github.com/Luthor2k
+  // It finds the angle between to points on a circle. Basic grade 11 math. It works! 
+  float beta = deltaPoint * ((2 * PI) / nodeCount);
+  float rho = atan(sin(beta) / (1 - cos(beta)));
+  float theta = (PI / 2) - rho;
+  float thetaDegrees = (theta / PI) * 180;
+
+  // Print it for debug
+  // printf("[%02d], %.1f (%.1f),\t%.1f\n", nodeOffset, targetPoint, deltaPoint, thetaDegrees);
+
+  return thetaDegrees ; 
+}
+
 void CreateServoCalabrationTable() 
 {
   // This table is manually generated. 
@@ -112,7 +137,28 @@ void CreateServoCalabrationTable()
   
 }
 
+unsigned char FindDeltaNode( unsigned short node, float target ) {
 
+  unsigned char nodeMod = node % SETTING_MAX_NODES ; 
+  unsigned char targetMod = (unsigned char) target % SETTING_MAX_NODES ; 
+  
+  unsigned char deltaPoint = 0 ; 
+  if( targetMod - nodeMod > 0 ) {
+    deltaPoint = nodeMod - targetMod; 
+  } else {         
+    deltaPoint = SETTING_MAX_NODES + (nodeMod - targetMod) ; 
+  }
+  
+  if( deltaPoint == 0 ) {
+    // Don't move. 
+    return SETTING_MAX_NODES / 2 ; 
+  }
+
+  return deltaPoint ; 
+}
+
+// Pattern functions 
+// ---------------------------------------------
 void LasersToCenter() {
   int pulselen = 0 ; 
   for( unsigned short node = 0 ; node <= SETTING_MAX_NODES ; node++ ) {
@@ -188,27 +234,29 @@ void FullScan()
   }
 }
 
-void AllLasersPointAtSameTarget() 
+void AllLasersPointAtDeltaSameTarget() 
 {
   for( unsigned short target = 0 ; target <= SETTING_MAX_NODES ; target++ ) {
     for( unsigned short node = 0 ; node <= SETTING_MAX_NODES ; node++ ) {
-  
+      unsigned char deltaPoint = FindDeltaNode(node, target) ; 
+      /*
       float deltaPoint = 0 ; 
-      if( target - node < 0 ) {
-        deltaPoint = abs( (float) node - target); 
-      } else { 
-        // Calulate what node to look at.
-        deltaPoint = abs( (float) target - node ); 
+      if( target - node > 0 ) {
+        deltaPoint = node - target; 
+      } else {         
+        deltaPoint = SETTING_MAX_NODES + (node - target) ; 
       }
       
       if( deltaPoint == 0 ) {
+        // Don't move. 
         continue; 
       }
+      */
       
-      float degrees = PointAt( deltaPoint, SETTING_MAX_NODES );
+      float degrees = PointAtDelta( deltaPoint, SETTING_MAX_NODES );
       SetServoDegrees( node, degrees );   
     }
-    delay( 500 ); 
+    delay( SETTING_FRAME_DELAY ); 
   }
 }
 
@@ -217,28 +265,78 @@ void AllLasersPointAtSameTarget()
 void LasersToStartingLocations() {
   int pulselen = 0 ; 
   for( unsigned short node = 0 ; node <= SETTING_MAX_NODES ; node++ ) {
-    float degrees = PointAt( 1, SETTING_MAX_NODES );
-    pulselen = map(degrees, 0, 180, SETTING_SERVOMIN, SETTING_SERVOMAX);
-    pwm.setPWM(node, 0, pulselen);
-    delay( 500 ); 
+    float degrees = PointAtDelta( 1, SETTING_MAX_NODES );
+    SetServoDegrees( node, degrees ); 
+    delay( 100 ); 
   }
 }
 
+void TimesTables() 
+{
+  // Update the times table. 
+  gTimesTable += SETTING_MOVEMENT_RATE ; 
+  Serial.println("TimesTable=" + String( gTimesTable ) ) ;  
+    
+  for( unsigned short node = 0 ; node <= SETTING_MAX_NODES ; node++ ) 
+  {
+    float target = node * gTimesTable ; 
+    unsigned char deltaPoint = FindDeltaNode( node, target ) ; 
+    
+    float degrees = PointAtDelta( deltaPoint, SETTING_MAX_NODES );
+    SetServoDegrees( node, degrees );   
+  }
 
-float PointAt( float deltaPoint, unsigned short nodeCount ) {
-
-	// I don't understand any of this. This was made by @Luthor2k https://github.com/Luthor2k
-	// It finds the angle between to points on a circle. Basic grade 11 math. It works! 
-	float beta = deltaPoint * ((2 * PI) / nodeCount);
-	float rho = atan(sin(beta) / (1 - cos(beta)));
-	float theta = (PI / 2) - rho;
-	float thetaDegrees = (theta / PI) * 180;
-
-	// Print it for debug
-	// printf("[%02d], %.1f (%.1f),\t%.1f\n", nodeOffset, targetPoint, deltaPoint, thetaDegrees);
-
-	return thetaDegrees ; 
+  delay( SETTING_FRAME_DELAY ); 
 }
+
+void FuckingRandom() 
+{  
+  LasersToCenter(); 
+  delay( SETTING_FRAME_DELAY ); 
+  
+  for( unsigned short node = 0 ; node <= SETTING_MAX_NODES ; node++ ) 
+  {
+    SetServoDegrees( node, random(30,180-30) );   
+  }
+  delay( SETTING_FRAME_DELAY ); 
+}
+
+void NicePatterns() 
+{
+  static unsigned char nicePatterOffset = 0 ; 
+  LasersToStartingLocations(); 
+  delay( SETTING_FRAME_DELAY ); 
+  
+  switch( nicePatterOffset ) 
+  {
+    // Square boxes 
+    case 0: {
+      SetServoDegrees( 0, PointAtAbsolute( 0, 8 ) );
+      SetServoDegrees( 8, PointAtAbsolute( 8, 0 ) );
+      break ;   
+    }
+    /*
+    case 1: {
+      SetServoDegrees(  0, PointAtAbsolute(  0,  5 ) );
+      SetServoDegrees(  5, PointAtAbsolute(  5,  0 ) );     
+
+      SetServoDegrees(  8, PointAtAbsolute(  8, 13 ) );     
+      SetServoDegrees( 13, PointAtAbsolute( 13,  8 ) );     
+      break ;   
+    }
+    */
+    
+    default: 
+    {
+      nicePatterOffset = 0 ; 
+      return ; 
+    }
+  }
+
+  nicePatterOffset++; 
+  delay( SETTING_FRAME_DELAY ); 
+}
+
 
 void setup() 
 {
@@ -250,6 +348,7 @@ void setup()
 
   // Start the times tables off at low number. 
   gTimesTable = 1.0f;
+  gPattern    = 0 ; 
   
   // Start up the servos.
   pwm.begin();  
@@ -264,21 +363,26 @@ void setup()
   
 }
 
-unsigned char pattern = 0 ; 
+
 void loop() 
 {
-
-  // AllLasersPointAtSameTarget() ; 
+  // NicePatterns() ; 
+  // LasersToCenter(); 
+  // TimesTables(); 
   // return ; 
+ 
+  gPattern++; 
   
-  pattern++; 
-  
-  if( pattern >= 0 && pattern < 5 ) {
+  if( gPattern >= 0 && gPattern < 5 ) {
     FullScan() ;
-  } if( pattern >= 0 && pattern < 5 ) {
-    AllLasersPointAtSameTarget() ;
+  } else if( gPattern >= 5 && gPattern < 10 ) {
+    AllLasersPointAtDeltaSameTarget() ;
+  } else if( gPattern >= 10 && gPattern < 20 ) {
+    TimesTables() ;
+  } else if( gPattern >= 20 && gPattern < 30 ) {
+    FuckingRandom() ;
   } else {
-    pattern = 0 ; 
+    gPattern = 0 ; 
   }
 
 
@@ -305,7 +409,7 @@ void loop()
     }
 
     // Calulate the angle.
-    float degrees = PointAt( deltaPoint, SETTING_MAX_NODES ); 
+    float degrees = PointAtDelta( deltaPoint, SETTING_MAX_NODES ); 
 
     // Move the servo 
     int pulselen = map(degrees, 0, 180, SETTING_SERVOMIN, SETTING_SERVOMAX);
@@ -316,6 +420,7 @@ void loop()
   }
 
   // Delay between movements
-  delay(SETTING_MOVEMENT_DELAY);
+  delay(SETTING_FRAME_DELAY);
   Serial.println(""); 
 }
+
