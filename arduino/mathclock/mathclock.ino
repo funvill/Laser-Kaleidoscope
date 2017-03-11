@@ -144,12 +144,10 @@ float FindDeltaNode( unsigned char node, float target ) {
   Serial.println("FindDeltaNode node= " + String(node) + ", target= " + String(target) ) ;  
 
   unsigned char nodeMod = node % SETTING_MAX_NODES ; 
-  float targetMod = (unsigned char) target % SETTING_MAX_NODES ; 
+  float targetMod = fmod( target, SETTING_MAX_NODES ) ; 
   
-  float deltaPoint = 0 ; 
-  if( targetMod - nodeMod > 0 ) {
-    deltaPoint = nodeMod - targetMod; 
-  } else {         
+  float deltaPoint = nodeMod - targetMod  ; 
+  if( deltaPoint < 0.0f  ) {
     deltaPoint = SETTING_MAX_NODES + (nodeMod - targetMod) ; 
   }
   
