@@ -1,11 +1,18 @@
 # Laser Kaleidoscope
 
-A large one meter wooden circle with ninety-six servos evenly places around the edge of the circle. On the top of each servo is a line laser pointer (vertical plastic Fresnel lens).  Each the loop, the servos are moved so that a fractal pattern forms from the laser lines on the circle. 
+A circular light box that incorporates moving lasers which generate twisting fractal shapes. 16 servos are evenly placed around the circle. Each servo has a laser diode on it, with a vertical fresnel len creating a line. The servos will rotate creating patterns inspired by mathematical formulas, cardioids and fractals. This project is based on this video [Times Tables, Mandelbrot and the Heart of Mathematics](https://www.youtube.com/watch?v=qhbuKbxJsk8) by Burkard Polster also known as [Mathologer](https://www.youtube.com/channel/UC1_uAIS3r8Vu6JjXWvastJg). An interactive animation of these fractals can be found here http://entibo.fr/timesTables/
 
-The fractal patterns are based off times tables of the Mandelbrot set as described in this video “Times Tables, Mandelbrot and the Heart of Mathematics” by “Mathologer” https://www.youtube.com/watch?v=qhbuKbxJsk8. An interactive animation of these fractals  can be found here http://entibo.fr/timesTables/
+[![Laser Kaleidoscope](https://img.youtube.com/vi/XHqZNfPvEVY/0.jpg)](https://www.youtube.com/watch?v=XHqZNfPvEVY)
 
+# Wiring
 ![Wiring](/documentation/16x_bb.png?raw=true "Wiring")
 
+# Parts
+
+- [Adafruit 16-channel PWM & Servo driver](http://www.adafruit.com/products/815)
+- 16x [9g servo motors](https://www.aliexpress.com/item/Free-Shipping-5PCS-LOT-SG90-9g-Mini-Micro-Servo-for-RC-for-RC-250-450-Helicopter/32349297925.html)
+- 16x [line laser pointers](https://www.aliexpress.com/item/Free-shipping-10pcs-lot-9MM-laser-head-laser-tube-laser-diode-3V-30ma-5mw-red-dot/32457307836.html) 
+- [Pololu 3.3V Step-Up/Step-Down Voltage Regulator S7V8F3](https://www.pololu.com/product/2122)
 
 ## 16 servos (mini version)
 This is a small demo version that I have on my desk for testing. 
