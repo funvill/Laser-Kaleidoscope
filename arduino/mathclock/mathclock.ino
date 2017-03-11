@@ -31,7 +31,7 @@
 
 // Consts
 // ============================================================================
-static const char *SKETCH_VERSION = "0.3";
+static const char *SKETCH_VERSION = "0.4";
 static const char *SKETCH_LAST_UPDATED = "2017-Mar-10";
 
 // Servo Consts
@@ -55,7 +55,7 @@ static const unsigned short SETTING_PWM_FREQUENCY = 60;
 // Settings
 // ============================================================================
 static const unsigned short SETTING_MAX_NODES = 16;
-static const unsigned short SETTING_FRAME_DELAY = 1000 * 5;
+static const unsigned short SETTING_FRAME_DELAY = 1000 * 1;
 static const float SETTING_MOVEMENT_RATE = 0.5f;
 
 // All the servos are off by a little bit. This is the difference that they are off by.
@@ -71,49 +71,47 @@ Adafruit_PWMServoDriver gServoDriver = Adafruit_PWMServoDriver();
 
 // Utility functions
 // ---------------------------------------------
-// This function saves the servo from wear and tear. It turns off the power to the 
-// servo. 
-void TurnOffServos( unsigned short delayAfter, unsigned short delayBefore = 50 ) 
+// This function saves the servo from wear and tear. It turns off the power to the
+// servo.
+void TurnOffServos(unsigned short delayAfter, unsigned short delayBefore = 50)
 {
   Serial.println("TurnOffServos delayAfter= " + String(delayAfter) + ", delayBefore= " + String(delayBefore));
-  if( delayBefore > 0 ) {
-    delay( delayBefore ); 
+  if (delayBefore > 0)
+  {
+    delay(delayBefore);
   }
   /*
+  // This is not working, Crashes the Arduino. 
   for (unsigned char node = 0; node <= SETTING_MAX_NODES; node++) {
     gServoDriver.setPWM(node, 4096, 0);
   }
   */
-  
-  delay( delayAfter ); 
-}
 
+  delay(delayAfter);
+}
 
 void SetServoDegrees(unsigned char node, float deg)
 {
-  Serial.println("SetServoDegrees node= " + String(node) + ", deg= " + String(deg));
-  if (node > SETTING_MAX_NODES)
-  {
-    return;
-  }
+  unsigned char nodeMod = node % SETTING_MAX_NODES;
+  Serial.println("SetServoDegrees node= " + String(nodeMod) + ", deg= " + String(deg));
 
   // Add SERVO_CALABRATION offsets
-  if (deg + SERVO_CALABRATION[node] > 180)
+  if (deg + SERVO_CALABRATION[nodeMod] > 180)
   {
     deg = 180;
   }
-  else if (deg + SERVO_CALABRATION[node] < 0)
+  else if (deg + SERVO_CALABRATION[nodeMod] < 0)
   {
     deg = 0;
   }
   else
   {
-    deg += SERVO_CALABRATION[node];
+    deg += SERVO_CALABRATION[nodeMod];
   }
 
   // Convert deg to pulselen
   int pulselen = map(deg, 0, 180, SETTING_SERVOMIN, SETTING_SERVOMAX);
-  gServoDriver.setPWM(node, 0, pulselen);
+  gServoDriver.setPWM(nodeMod, 0, pulselen);
 }
 
 float PointAtAbsolute(unsigned char node, float target)
@@ -186,7 +184,6 @@ float FindDeltaNode(unsigned char node, float target)
   return deltaPoint;
 }
 
-
 void FindServoMinAndMax()
 {
   unsigned char node = 0;
@@ -224,7 +221,6 @@ void LasersToCenter()
   }
   TurnOffServos(SETTING_FRAME_DELAY);
 }
-
 
 void FullScan()
 {
@@ -380,15 +376,50 @@ void NicePatterns()
         SetServoDegrees(node, PointAtDelta(FindDeltaNode(node, node * 16)));
       }
       break;
+    case 3:
+      // Pentagram
+      for (unsigned char node = 0; node <= SETTING_MAX_NODES; node += 2)
+      {
+        SetServoDegrees(node, PointAtDelta(FindDeltaNode(node, node + 4)));
+      }
+
+      // Off
+      for (unsigned char node = 1; node <= SETTING_MAX_NODES; node += 2)
+      {
+        SetServoDegrees(node, 0);
+      }
+
+      break;
 
     default:
       // Done
       return;
     }
-
     nicePatterOffset++;
     TurnOffServos(SETTING_FRAME_DELAY);
   }
+}
+
+void TwoSideFanRotating()
+{
+  for (unsigned char offset = 0; offset <= SETTING_MAX_NODES; offset++)
+  {
+    for (unsigned char node = 0; node <= SETTING_MAX_NODES / 2; node += 1)
+    {
+      SetServoDegrees(node + offset, PointAtAbsolute(node + offset, 4 + offset));
+    }
+    for (unsigned char node = SETTING_MAX_NODES / 2; node <= SETTING_MAX_NODES; node += 1)
+    {
+      SetServoDegrees(node + offset, PointAtAbsolute(node + offset, 12 + offset));
+    }
+    TurnOffServos(10);
+  }
+}
+
+void TestPattern()
+{
+  TwoSideFanRotating(); 
+  TurnOffServos(SETTING_FRAME_DELAY * 30);
 }
 
 void setup()
@@ -412,9 +443,8 @@ void setup()
 
 void loop()
 {
-  // TimesTables() ; 
-  // NicePatterns() ;
-  // return ;
+  // TestPattern();
+  // return;
 
   switch (gPattern++)
   {
@@ -435,6 +465,10 @@ void loop()
   case 6:
     NicePatterns();
     break;
+  case 7:
+    TwoSideFanRotating();
+    break;
+
   default:
     gPattern = 0;
     break;
