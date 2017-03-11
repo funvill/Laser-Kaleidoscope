@@ -13,6 +13,8 @@ A circular light box that incorporates moving lasers which generate twisting fra
 - 16x [9g servo motors](https://www.aliexpress.com/item/Free-Shipping-5PCS-LOT-SG90-9g-Mini-Micro-Servo-for-RC-for-RC-250-450-Helicopter/32349297925.html)
 - 16x [line laser pointers](https://www.aliexpress.com/item/Free-shipping-10pcs-lot-9MM-laser-head-laser-tube-laser-diode-3V-30ma-5mw-red-dot/32457307836.html) 
 - [Pololu 3.3V Step-Up/Step-Down Voltage Regulator S7V8F3](https://www.pololu.com/product/2122)
+- [Mean Well DR-4505](http://ca.mouser.com/ProductDetail/Mean-Well/DR-4505/) - DIN Rail Power Supplies 25W 5V 5A
+- [DC Power Jack Barrel Plug Connector 2.1 Terminal](https://www.aliexpress.com/item/Freeshipping-new-DC-Power-Female-Jack-Barrel-Plug-Connector-2-1-x-5-5-mm-Adapter/32795063393.html)
 
 ## 16 servos (mini version)
 This is a small demo version that I have on my desk for testing. 
