@@ -1,4 +1,4 @@
-# Math Clock
+# Laser Kaleidoscope
 
 A large one meter wooden circle with ninety-six servos evenly places around the edge of the circle. On the top of each servo is a line laser pointer (vertical plastic Fresnel lens).  Each the loop, the servos are moved so that a fractal pattern forms from the laser lines on the circle. 
 
@@ -6,10 +6,6 @@ The fractal patterns are based off times tables of the Mandelbrot set as describ
 
 ![Wiring](/documentation/16x_bb.png?raw=true "Wiring")
 
-ToDo
-
-- Choose a better name. math clock is not the most inspiring name.
-- Do a better intro so all the art geeks will like me.
 
 ## 16 servos (mini version)
 This is a small demo version that I have on my desk for testing. 
