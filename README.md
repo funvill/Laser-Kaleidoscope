@@ -2,7 +2,7 @@
 
 A circular light box that incorporates moving lasers which generate twisting fractal shapes. 16 servos are evenly placed around the circle. Each servo has a laser diode on it, with a vertical fresnel len creating a line. The servos will rotate creating patterns inspired by mathematical formulas, cardioids and fractals. This project is based on this video [Times Tables, Mandelbrot and the Heart of Mathematics](https://www.youtube.com/watch?v=qhbuKbxJsk8) by Burkard Polster also known as [Mathologer](https://www.youtube.com/channel/UC1_uAIS3r8Vu6JjXWvastJg). An interactive animation of these fractals can be found here http://entibo.fr/timesTables/
 
-<center>[![Laser Kaleidoscope](https://img.youtube.com/vi/XHqZNfPvEVY/0.jpg)](https://www.youtube.com/watch?v=XHqZNfPvEVY)</center>
+[![Laser Kaleidoscope](https://img.youtube.com/vi/XHqZNfPvEVY/0.jpg)](https://www.youtube.com/watch?v=XHqZNfPvEVY)
 
 # Wiring
 ![Wiring](/documentation/16x_bb.png?raw=true "Wiring")
