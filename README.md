@@ -16,14 +16,14 @@ A circular light box that incorporates moving lasers which generate twisting fra
 - [Mean Well DR-4505](http://ca.mouser.com/ProductDetail/Mean-Well/DR-4505/) - DIN Rail Power Supplies 25W 5V 5A
 - [DC Power Jack Barrel Plug Connector 2.1 Terminal](https://www.aliexpress.com/item/Freeshipping-new-DC-Power-Female-Jack-Barrel-Plug-Connector-2-1-x-5-5-mm-Adapter/32795063393.html)
 
-## 16 servos (mini version)
+# 16 servos (mini version)
 This is a small demo version that I have on my desk for testing. 
 
 ![16x_table2](/documentation/16x_table2.png?raw=true "16x_table2")
 ![16x_table3](/documentation/16x_table3.png?raw=true "16x_table3")
 ![16x_table9](/documentation/16x_table2.png?raw=true "16x_table9")
 
-## 96 servos (Large version)
+# 96 servos (Large version)
 This is a huge version that I bring to shows.
 
 ![96x_table2](/documentation/96x_table2.png?raw=true "96x_table2")
