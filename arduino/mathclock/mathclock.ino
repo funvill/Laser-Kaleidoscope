@@ -14,6 +14,10 @@
   - 16 9g servo motors 
   - 16 line laser pointers. 
 
+  Libaries 
+  -----------------------------------------------------------------------------
+  - Adafruit-PWM-Servo-Driver-Library https://github.com/adafruit/Adafruit-PWM-Servo-Driver-Library 
+
   Pin out
   -----------------------------------------------------------------------------
   Arduino Nano      PCA9685 (Adafruit 16-channel PWM & Servo driver) 
@@ -150,7 +154,7 @@ void CreateServoCalabrationTable()
   SERVO_CALABRATION[4] = -3;
   SERVO_CALABRATION[5] = 5;
   SERVO_CALABRATION[6] = -7;
-  SERVO_CALABRATION[7] = -5;
+  SERVO_CALABRATION[7] = -15 ; // -5;
   SERVO_CALABRATION[8] = 8;
   SERVO_CALABRATION[9] = -2;
   SERVO_CALABRATION[10] = 10;
@@ -443,7 +447,7 @@ void setup()
 
 void loop()
 {
-
+  // LasersToCenter(); 
   // TestPattern() ; 
   // return;
 
